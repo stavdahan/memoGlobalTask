@@ -19,6 +19,9 @@ public class MongoDBService
 
     public async Task CreateAsync(User user)
     {
+        var sort = Builders<User>.Sort.Descending(u => u.id);
+        var greatestUser = await _usersCollection.Find(_ => true).Sort(sort).FirstOrDefaultAsync();
+        user.id = greatestUser.id + 1;
         await _usersCollection.InsertOneAsync(user);
         return;
     }
@@ -39,7 +42,6 @@ public class MongoDBService
     {
         User updatedUser = await _usersCollection.Find(u => u.id == id).FirstOrDefaultAsync();
         if (updatedUser == null) {
-            Console.WriteLine("hi");
             return updatedUser;
         } 
         updatedUser = await _usersCollection.FindOneAndUpdateAsync(
