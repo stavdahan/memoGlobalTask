@@ -2,22 +2,23 @@ using MongoExample.Models;
 using MongoExample.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var policyName = "_myAllowSpecificOrigins";
 
 builder.Services.Configure<MongoDBSetting>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<MongoDBService>();
-var policy = "policy";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: policy,
-        builder =>
-        {
-            builder.WithOrigins(
+    options.AddPolicy(name: policyName,
+    policy =>
+    {
+        policy.WithOrigins(
             "https://localhost",
             "https://www.google.com",
-            "https://www.memoglobal.com");
-        });
+            "https://www.memoglobal.com")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
-// Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -35,10 +36,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("CorsPolicy");
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseCors(policy);
 
 app.Run();
